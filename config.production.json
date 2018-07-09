@@ -1,0 +1,9 @@
+{
+    "database": {
+        "host": "",
+        "password": "",
+        "name": "my_api_db"
+    },
+    "host": "",
+    "port": ""
+}

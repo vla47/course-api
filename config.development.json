@@ -1,0 +1,9 @@
+{
+    "database": {
+        "host": "localhost:27017",
+        "password": "",
+        "name": "my_api_db"
+    },
+    "host": "localhost",
+    "port": "3000"
+}
