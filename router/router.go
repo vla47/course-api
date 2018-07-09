@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/vla47/go-api-mongo/store"
+	"github.com/vla47/course-api/store"
 
 	"github.com/gorilla/mux"
-	"github.com/vla47/go-api-mongo/middleware"
-	"github.com/vla47/go-api-mongo/model"
+	"github.com/vla47/course-api/middleware"
+	"github.com/vla47/course-api/model"
 )
 
 var config *model.Config

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	uuid "github.com/satori/go.uuid"
-	"github.com/vla47/go-api-mongo/model"
+	"github.com/vla47/course-api/model"
 	"golang.org/x/crypto/bcrypt"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

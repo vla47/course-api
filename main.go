@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/vla47/go-api-mongo/router"
+	"github.com/vla47/course-api/router"
 )
 
 func main() {

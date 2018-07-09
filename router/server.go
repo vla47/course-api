@@ -11,8 +11,8 @@ import (
 
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/vla47/go-api-mongo/model"
-	"github.com/vla47/go-api-mongo/store"
+	"github.com/vla47/course-api/model"
+	"github.com/vla47/course-api/store"
 	"gopkg.in/mgo.v2/bson"
 )
 
