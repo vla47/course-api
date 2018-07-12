@@ -1,1 +1,1 @@
-web: go-api-mongo
+web: course-api
