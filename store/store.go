@@ -52,7 +52,7 @@ func (db *DB) Register(cred *model.Credentials) error {
 		Firstname: cred.Firstname,
 		Lastname:  cred.Lastname,
 	}
-	fmt.Println(account.Email, profile.Firstname)
+
 	_, err := db.db.C("user").UpsertId(cred.Email, account)
 	_, err = db.db.C("user").UpsertId(ID.String(), profile)
 
@@ -61,20 +61,27 @@ func (db *DB) Register(cred *model.Credentials) error {
 
 func (db *DB) Login(cred *model.Credentials) (map[string]interface{}, error) {
 	var account *model.Account
+	var result map[string]interface{}
+	result = make(map[string]interface{})
+
 	err := db.db.C("user").FindId(cred.Email).One(&account)
+
+	if err != nil {
+		return result, err
+	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(cred.Password))
 
 	session := model.Session{
 		Type: "session",
 		Pid:  account.Pid,
 	}
-	var result map[string]interface{}
-	result = make(map[string]interface{})
+
 	ID, err := uuid.NewV4()
 	result["sid"] = ID.String()
 
 	_, err = db.db.C("user").UpsertId(ID.String(), session)
-
+	fmt.Println("ERROR", err)
 	return result, err
 }
 

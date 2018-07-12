@@ -64,7 +64,10 @@ func (env *Env) LoginEndpoint(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewDecoder(req.Body).Decode(&creds)
 
 	result, err := store.Store.Login(env.db, creds)
+	fmt.Println(result)
+	fmt.Println(err)
 	if err != nil {
+		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
 		return
 	}
@@ -120,7 +123,7 @@ func (env *Env) AddCourseHandler(w http.ResponseWriter, req *http.Request) {
 	// rewrite all the encoding values to a message that it was successfull
 	var course *model.Course
 	_ = json.NewDecoder(req.Body).Decode(&course)
-
+	fmt.Println(context.Get(req, "pid"))
 	course.Type = "course"
 	course.Pid = context.Get(req, "pid").(string)
 	course.Timestamp = int(time.Now().Unix())
@@ -181,6 +184,7 @@ func (env *Env) Validate(next http.Handler) http.Handler {
 		authorizationHeader := req.Header.Get("authorization")
 		if req.RequestURI == "/api/register" || req.RequestURI == "/api/login" {
 			next.ServeHTTP(w, req)
+			return
 		}
 		if authorizationHeader != "" {
 			bearerToken := strings.Split(authorizationHeader, " ")
@@ -193,7 +197,6 @@ func (env *Env) Validate(next http.Handler) http.Handler {
 					return
 				}
 				context.Set(req, "pid", session.Pid)
-
 				next.ServeHTTP(w, req)
 			}
 		} else {

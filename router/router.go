@@ -6,8 +6,9 @@ import (
 
 	"github.com/vla47/course-api/store"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/vla47/course-api/middleware"
+
 	"github.com/vla47/course-api/model"
 )
 
@@ -29,7 +30,7 @@ func LoadRoutes() error {
 	env := &Env{db: db}
 
 	router.Use(env.Validate)
-	router.Use(header.HandleCors)
+	router.Use(HandleCors)
 
 	router.HandleFunc("/api/register", env.RegisterEndpoint).Methods("POST")
 	router.HandleFunc("/api/login", env.LoginEndpoint).Methods("POST")
@@ -44,6 +45,24 @@ func LoadRoutes() error {
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
 	// router.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("{\"hello\": \"world\"}"))
+	})
+	// handler := cors.Default().Handler(router)
+	// return http.ListenAndServe(":"+config.Port, handler)
 
-	return http.ListenAndServe(":"+config.Port, router)
+	return http.ListenAndServe(":"+config.Port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router))
+
+}
+
+// HandleCors is a middleware function that appends headers
+// for options requests and aborts then exits the middleware
+// chain and ends the request.
+func HandleCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		next.ServeHTTP(w, r)
+	})
 }
