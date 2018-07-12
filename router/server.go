@@ -29,7 +29,6 @@ func LoadConfiguration(file string) *model.Config {
 }
 
 func Init() {
-
 	if os.Getenv("ENV") == "dev" {
 		config = LoadConfiguration("config.development.json")
 	}
@@ -42,7 +41,6 @@ func Init() {
 	if config.Port == "" {
 		log.Fatal("$PORT must be set")
 	}
-
 }
 
 func (env *Env) RegisterEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -64,8 +62,6 @@ func (env *Env) LoginEndpoint(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewDecoder(req.Body).Decode(&creds)
 
 	result, err := store.Store.Login(env.db, creds)
-	fmt.Println(result)
-	fmt.Println(err)
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -78,7 +74,6 @@ func (env *Env) AccountEndpoint(w http.ResponseWriter, req *http.Request) {
 	var profile *model.Profile
 
 	profile, err := store.Store.GetAccount(env.db, context.Get(req, "pid").(string))
-
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
