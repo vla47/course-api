@@ -2,7 +2,6 @@ package header
 
 import (
 	"net/http"
-	// gorilaContext "github.com/gorilla/context"
 )
 
 // HandleCors is a middleware function that appends headers
