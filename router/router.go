@@ -24,45 +24,27 @@ type Env struct {
 func LoadRoutes() error {
 	router := mux.NewRouter()
 	Init()
+	var headers = handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	var methods = handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"})
+	var origins = handlers.AllowedOrigins([]string{"*"})
 
 	db, _ := store.NewDB(*config)
 
 	env := &Env{db: db}
 
-	router.Use(env.Validate)
-	router.Use(HandleCors)
+	router.HandleFunc("/api/register", env.RegisterHandler).Methods("POST")
+	router.HandleFunc("/api/login", env.LoginHandler).Methods("POST")
+	router.HandleFunc("/api/account", env.Validate(env.AccountHandler)).Methods("GET")
 
-	router.HandleFunc("/api/register", env.RegisterEndpoint).Methods("POST")
-	router.HandleFunc("/api/login", env.LoginEndpoint).Methods("POST")
-	router.HandleFunc("/api/account", env.AccountEndpoint).Methods("GET")
-
-	router.HandleFunc("/api/courses", env.GetCoursesEndpoint).Methods("GET")
-	router.HandleFunc("/api/courses", env.AddCourseHandler).Methods("POST")
-	router.HandleFunc("/api/course/{id}", env.GetCourseHandler).Methods("GET")
-	router.HandleFunc("/api/course", env.UpdateCourseHandler).Methods("PUT")
-	router.HandleFunc("/api/course/{id}", env.DeleteCourseHandler).Methods("DELETE")
-	router.HandleFunc("/api/courses/search/{term}", env.SearchCoursesEndpoint).Methods("GET")
+	router.HandleFunc("/api/courses", env.Validate(env.GetCoursesHandler)).Methods("GET")
+	router.HandleFunc("/api/courses", env.Validate(env.AddCourseHandler)).Methods("POST")
+	router.HandleFunc("/api/course/{id}", env.Validate(env.GetCourseHandler)).Methods("GET")
+	router.HandleFunc("/api/course", env.Validate(env.UpdateCourseHandler)).Methods("PUT")
+	router.HandleFunc("/api/course/{id}", env.Validate(env.DeleteCourseHandler)).Methods("DELETE")
+	router.HandleFunc("/api/courses/search/{term}", env.Validate(env.SearchCoursesHandler)).Methods("GET")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
-	// router.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("{\"hello\": \"world\"}"))
-	})
-	// handler := cors.Default().Handler(router)
-	// return http.ListenAndServe(":"+config.Port, handler)
 
-	return http.ListenAndServe(":"+config.Port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router))
+	return http.ListenAndServe(":"+config.Port, handlers.CORS(headers, methods, origins)(router))
 
-}
-
-// HandleCors is a middleware function that appends headers
-// for options requests and aborts then exits the middleware
-// chain and ends the request.
-func HandleCors(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		next.ServeHTTP(w, r)
-	})
 }

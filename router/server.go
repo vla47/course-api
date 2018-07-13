@@ -16,6 +16,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// LoadConfiguration load the cofig file
 func LoadConfiguration(file string) *model.Config {
 	// var config *model.Config
 	configFile, err := os.Open(file)
@@ -28,6 +29,7 @@ func LoadConfiguration(file string) *model.Config {
 	return config
 }
 
+// Init initialize env vars and port
 func Init() {
 	if os.Getenv("ENV") == "dev" {
 		config = LoadConfiguration("config.development.json")
@@ -43,7 +45,8 @@ func Init() {
 	}
 }
 
-func (env *Env) RegisterEndpoint(w http.ResponseWriter, req *http.Request) {
+// RegisterHandler register a new user
+func (env *Env) RegisterHandler(w http.ResponseWriter, req *http.Request) {
 	var creds *model.Credentials
 	_ = json.NewDecoder(req.Body).Decode(&creds)
 
@@ -56,7 +59,8 @@ func (env *Env) RegisterEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(creds)
 }
 
-func (env *Env) LoginEndpoint(w http.ResponseWriter, req *http.Request) {
+// LoginHandler is login a registered user
+func (env *Env) LoginHandler(w http.ResponseWriter, req *http.Request) {
 	var creds *model.Credentials
 	var result map[string]interface{}
 	_ = json.NewDecoder(req.Body).Decode(&creds)
@@ -70,7 +74,8 @@ func (env *Env) LoginEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func (env *Env) AccountEndpoint(w http.ResponseWriter, req *http.Request) {
+// AccountHandler shows the account of the user
+func (env *Env) AccountHandler(w http.ResponseWriter, req *http.Request) {
 	var profile *model.Profile
 
 	profile, err := store.Store.GetAccount(env.db, context.Get(req, "pid").(string))
@@ -82,8 +87,8 @@ func (env *Env) AccountEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(profile)
 }
 
-// GetCoursesEndpoint gets the courses
-func (env *Env) GetCoursesEndpoint(w http.ResponseWriter, req *http.Request) {
+// GetCoursesHandler gets the courses
+func (env *Env) GetCoursesHandler(w http.ResponseWriter, req *http.Request) {
 	var courses []*model.Course
 
 	courses, err := store.Store.GetCourses(env.db, context.Get(req, "pid").(string))
@@ -99,7 +104,8 @@ func (env *Env) GetCoursesEndpoint(w http.ResponseWriter, req *http.Request) {
 	// json.NewEncoder(w).Encode()
 }
 
-func (env *Env) SearchCoursesEndpoint(w http.ResponseWriter, req *http.Request) {
+// SearchCoursesHandler is searching for a course
+func (env *Env) SearchCoursesHandler(w http.ResponseWriter, req *http.Request) {
 	var courses []*model.Course
 	params := mux.Vars(req)
 	courses, err := store.Store.SearchCourses(env.db, strings.ToLower(params["term"]))
@@ -174,13 +180,9 @@ func (env *Env) DeleteCourseHandler(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(course)
 }
 
-func (env *Env) Validate(next http.Handler) http.Handler {
+func (env *Env) Validate(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		authorizationHeader := req.Header.Get("authorization")
-		if req.RequestURI == "/api/register" || req.RequestURI == "/api/login" {
-			next.ServeHTTP(w, req)
-			return
-		}
 		if authorizationHeader != "" {
 			bearerToken := strings.Split(authorizationHeader, " ")
 			if len(bearerToken) == 2 {
@@ -199,7 +201,6 @@ func (env *Env) Validate(next http.Handler) http.Handler {
 			w.Write([]byte("An authorization header is required"))
 			return
 		}
-
 	})
 }
 
@@ -218,10 +219,12 @@ func Error(w http.ResponseWriter, err error, code int, logger *log.Logger) {
 	json.NewEncoder(w).Encode(&model.ErrorResponse{Err: err.Error()})
 }
 
-// NotFound writes an API error message to the response.
-func NotFound(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{}` + "\n"))
+// NotFoundHandler overrides the default not found handler
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	// You can use the serve file helper to respond to 404 with
+	// your request file.
+	fmt.Println("sdadsd")
+	http.ServeFile(w, r, "public/index.html")
 }
 
 // encodeJSON encodes v to w in JSON format. Error() is called if encoding fails.
