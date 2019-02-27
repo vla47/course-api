@@ -12,7 +12,7 @@ import (
 )
 
 type DB struct {
-	db *mgo.Database
+	*mgo.Database
 }
 
 func NewDB(config model.Config) (*DB, error) {
@@ -22,7 +22,7 @@ func NewDB(config model.Config) (*DB, error) {
 		return &DB{session.DB(config.Database.Name)}, err
 	}
 
-	return &DB{session.DB(config.Database.Name)}, nil
+	return &DB{session.DB(config.Database.Name)}, err
 }
 
 type Store interface {
@@ -53,8 +53,8 @@ func (db *DB) Register(cred *model.Credentials) error {
 		Lastname:  cred.Lastname,
 	}
 
-	_, err := db.db.C("user").UpsertId(cred.Email, account)
-	_, err = db.db.C("user").UpsertId(ID.String(), profile)
+	_, err := db.C("user").UpsertId(cred.Email, account)
+	_, err = db.C("user").UpsertId(ID.String(), profile)
 
 	return err
 }
@@ -64,7 +64,7 @@ func (db *DB) Login(cred *model.Credentials) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	result = make(map[string]interface{})
 
-	err := db.db.C("user").FindId(cred.Email).One(&account)
+	err := db.C("user").FindId(cred.Email).One(&account)
 
 	if err != nil {
 		return result, err
@@ -80,7 +80,7 @@ func (db *DB) Login(cred *model.Credentials) (map[string]interface{}, error) {
 	ID, err := uuid.NewV4()
 	result["sid"] = ID.String()
 
-	_, err = db.db.C("user").UpsertId(ID.String(), session)
+	_, err = db.C("user").UpsertId(ID.String(), session)
 	fmt.Println("ERROR", err)
 	return result, err
 }
@@ -88,50 +88,50 @@ func (db *DB) Login(cred *model.Credentials) (map[string]interface{}, error) {
 func (db *DB) GetAccount(pid string) (*model.Profile, error) {
 
 	var profile *model.Profile
-	err := db.db.C("user").FindId(bson.M{"pid": pid}).One(&profile)
+	err := db.C("user").FindId(bson.M{"pid": pid}).One(&profile)
 
 	return profile, err
 }
 
 func (db *DB) GetCourses(pid string) ([]*model.Course, error) {
 	var courses []*model.Course
-	err := db.db.C("courses").Find(bson.M{"pid": pid}).All(&courses)
+	err := db.C("courses").Find(bson.M{"pid": pid}).All(&courses)
 
 	return courses, err
 }
 
 func (db *DB) SearchCourses(term string) ([]*model.Course, error) {
 	var courses []*model.Course
-	err := db.db.C("courses").Find(bson.M{"name": bson.M{"$regex": term}}).All(&courses)
+	err := db.C("courses").Find(bson.M{"name": bson.M{"$regex": term}}).All(&courses)
 
 	return courses, err
 }
 
 func (db *DB) AddCourse(course *model.Course) error {
-	err := db.db.C("courses").Insert(course)
+	err := db.C("courses").Insert(course)
 	return err
 }
 
 func (db *DB) UpdateCourse(course *model.Course) error {
 	course.Timestamp = int(time.Now().Unix())
-	_, err := db.db.C("courses").UpsertId(course.ID, course)
+	_, err := db.C("courses").UpsertId(course.ID, course)
 	return err
 }
 
 func (db *DB) GetCourse(id bson.ObjectId) (*model.Course, error) {
 	var course *model.Course
-	err := db.db.C("courses").FindId(id).One(&course)
+	err := db.C("courses").FindId(id).One(&course)
 	return course, err
 }
 
 func (db *DB) DeleteCourse(id bson.ObjectId) error {
-	err := db.db.C("courses").RemoveId(id)
+	err := db.C("courses").RemoveId(id)
 	return err
 }
 
 func (db *DB) IsUserAuthenticated(token string) (*model.Session, error) {
 	var session *model.Session
-	err := db.db.C("user").FindId(token).One(&session)
+	err := db.C("user").FindId(token).One(&session)
 
 	return session, err
 }
