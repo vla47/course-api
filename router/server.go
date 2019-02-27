@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/vla47/course-api/model"
-	"github.com/vla47/course-api/store"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -50,7 +49,7 @@ func (env *Env) RegisterHandler(w http.ResponseWriter, req *http.Request) {
 	var creds *model.Credentials
 	_ = json.NewDecoder(req.Body).Decode(&creds)
 
-	err := store.Store.Register(env.db, creds)
+	err := env.db.Register(creds)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
@@ -65,7 +64,7 @@ func (env *Env) LoginHandler(w http.ResponseWriter, req *http.Request) {
 	var result map[string]interface{}
 	_ = json.NewDecoder(req.Body).Decode(&creds)
 
-	result, err := store.Store.Login(env.db, creds)
+	result, err := env.db.Login(creds)
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -78,7 +77,7 @@ func (env *Env) LoginHandler(w http.ResponseWriter, req *http.Request) {
 func (env *Env) AccountHandler(w http.ResponseWriter, req *http.Request) {
 	var profile *model.Profile
 
-	profile, err := store.Store.GetAccount(env.db, context.Get(req, "pid").(string))
+	profile, err := env.db.GetAccount(context.Get(req, "pid").(string))
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -91,7 +90,7 @@ func (env *Env) AccountHandler(w http.ResponseWriter, req *http.Request) {
 func (env *Env) GetCoursesHandler(w http.ResponseWriter, req *http.Request) {
 	var courses []*model.Course
 
-	courses, err := store.Store.GetCourses(env.db, context.Get(req, "pid").(string))
+	courses, err := env.db.GetCourses(context.Get(req, "pid").(string))
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -108,7 +107,7 @@ func (env *Env) GetCoursesHandler(w http.ResponseWriter, req *http.Request) {
 func (env *Env) SearchCoursesHandler(w http.ResponseWriter, req *http.Request) {
 	var courses []*model.Course
 	params := mux.Vars(req)
-	courses, err := store.Store.SearchCourses(env.db, strings.ToLower(params["term"]))
+	courses, err := env.db.SearchCourses(strings.ToLower(params["term"]))
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -129,7 +128,7 @@ func (env *Env) AddCourseHandler(w http.ResponseWriter, req *http.Request) {
 	course.Pid = context.Get(req, "pid").(string)
 	course.Timestamp = int(time.Now().Unix())
 	course.ID = bson.NewObjectId()
-	err := store.Store.AddCourse(env.db, course)
+	err := env.db.AddCourse(course)
 	if err != nil {
 		w.WriteHeader(404)
 		w.Write([]byte(err.Error()))
@@ -142,7 +141,7 @@ func (env *Env) UpdateCourseHandler(w http.ResponseWriter, req *http.Request) {
 	// rewrite all the encoding values to a message that it was successfull
 	var course *model.Course
 	_ = json.NewDecoder(req.Body).Decode(&course)
-	err := store.Store.UpdateCourse(env.db, course)
+	err := env.db.UpdateCourse(course)
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -158,7 +157,7 @@ func (env *Env) GetCourseHandler(w http.ResponseWriter, req *http.Request) {
 	if !bson.IsObjectIdHex(id) {
 		return
 	}
-	course, err := store.Store.GetCourse(env.db, bson.ObjectIdHex(id))
+	course, err := env.db.GetCourse(bson.ObjectIdHex(id))
 	if err != nil {
 		w.WriteHeader(404)
 		w.Write([]byte(err.Error()))
@@ -171,7 +170,7 @@ func (env *Env) DeleteCourseHandler(w http.ResponseWriter, req *http.Request) {
 	var course *model.Course
 	params := mux.Vars(req)
 	id := params["id"]
-	err := store.Store.DeleteCourse(env.db, bson.ObjectIdHex(id))
+	err := env.db.DeleteCourse(bson.ObjectIdHex(id))
 	if err != nil {
 		w.WriteHeader(401)
 		w.Write([]byte(err.Error()))
@@ -187,7 +186,7 @@ func (env *Env) Validate(next http.HandlerFunc) http.HandlerFunc {
 			bearerToken := strings.Split(authorizationHeader, " ")
 			if len(bearerToken) == 2 {
 				var session *model.Session
-				session, err := store.Store.IsUserAuthenticated(env.db, bearerToken[1])
+				session, err := env.db.IsUserAuthenticated(bearerToken[1])
 				if err != nil {
 					w.WriteHeader(401)
 					w.Write([]byte(err.Error()))
