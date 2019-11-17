@@ -13,5 +13,5 @@ func main() {
 	server := router.LoadRoutes()
 
 	log.Fatal(server)
-	fmt.Scanln() 
+	fmt.Scanln()
 }
