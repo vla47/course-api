@@ -1,0 +1,27 @@
+# github.com/gorilla/context v1.1.1
+## explicit
+github.com/gorilla/context
+# github.com/gorilla/handlers v1.3.1-0.20180508193452-13a38d26174b
+## explicit
+github.com/gorilla/handlers
+# github.com/gorilla/mux v1.6.3-0.20180517173623-c85619274f5d
+## explicit
+github.com/gorilla/mux
+# github.com/satori/go.uuid v1.2.1-0.20180103174451-36e9d2ebbde5
+## explicit
+github.com/satori/go.uuid
+# golang.org/x/crypto v0.0.0-20180527072434-ab813273cd59
+## explicit
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+## explicit; go 1.11
+# gopkg.in/mgo.v2 v2.0.0-20160818020120-3f83fa500528
+## explicit
+gopkg.in/mgo.v2
+gopkg.in/mgo.v2/bson
+gopkg.in/mgo.v2/internal/json
+gopkg.in/mgo.v2/internal/sasl
+gopkg.in/mgo.v2/internal/scram
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
