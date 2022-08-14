@@ -1,6 +1,6 @@
 module github.com/vla47/course-api
 
-go 1.19
+go 1.17
 
 require (
 	github.com/gorilla/context v1.1.1
